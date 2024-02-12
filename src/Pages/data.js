@@ -93,7 +93,7 @@ function Data() {
           Sort by Date
         </button>
         <button onClick={() => handleSort("time")}>Sort by Time</button>
-        <button className="ml-4" onClick={handlePrintPDF}>
+        <button className="ml-4 bg-blue-400 p-2 rounded-lg text-white" onClick={handlePrintPDF}>
           Print as PDF
         </button>
       </div>
