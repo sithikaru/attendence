@@ -3,6 +3,7 @@ import { db, auth } from "../config/firebase";
 import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import axios from "axios";
 
 function Data() {
   const [attendenceList, setAttendenceList] = useState([]);
@@ -12,40 +13,35 @@ function Data() {
   const AttendenceCollectionRef = collection(db, "attendence");
 
   useEffect(() => {
-    const getAttendence = async () => {
+    const fetchData = async () => {
       try {
         const currentUser = auth.currentUser;
-    
         if (!currentUser) {
           console.error("User not authenticated");
           return;
         }
-    
         const currentUserId = currentUser.uid;
-    
         console.log("Current User ID:", currentUserId);
-    
         const q = query(
           AttendenceCollectionRef,
           where("userId", "==", currentUserId),
           orderBy(sortBy, sortOrder)
         );
-    
         const querySnapshot = await getDocs(q);
-    
         const attendenceData = [];
         querySnapshot.forEach((doc) => {
           attendenceData.push({ id: doc.id, ...doc.data() });
         });
-    
         setAttendenceList(attendenceData);
       } catch (error) {
         console.error("Error fetching attendance data:", error);
       }
     };
-    
 
-    getAttendence();
+    const interval = setInterval(fetchData, 5000); // Fetch data every 5 seconds
+
+    return () => clearInterval(interval); // Cleanup function
+
   }, [sortBy, sortOrder]); // Update the effect when sortBy or sortOrder changes
 
   const openGoogleMaps = (lat, lon) => {
@@ -58,15 +54,24 @@ function Data() {
     setSortOrder(sortOrder === "asc" ? "desc" : "asc");
   };
 
-  const handlePrintPDF = () => {
+  const handlePrintPDF = async () => {
     const doc = new jsPDF();
     doc.text("Attendance Data", 20, 10);
 
-    const tableData = attendenceList.map((attendence) => [
-      `${attendence.lat}, ${attendence.lon}`,
-      attendence.date,
-      attendence.time,
-    ]);
+    const tableData = await Promise.all(
+      attendenceList.map(async (attendance) => {
+        try {
+          const response = await axios.get(
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${attendance.lat},${attendance.lon}&key=YOUR_API_KEY`
+          );
+          const address = response.data.results[0].formatted_address;
+          return [address, attendance.date, attendance.time];
+        } catch (error) {
+          console.error("Error fetching address:", error);
+          return ["Address not available", attendance.date, attendance.time];
+        }
+      })
+    );
 
     doc.autoTable({
       head: [["Location", "Date", "Time"]],
@@ -92,28 +97,39 @@ function Data() {
         <table className="min-w-full bg-white border border-gray-300 text-center">
           <thead>
             <tr>
-              <th className="py-2 px-4 border-b cursor-pointer" onClick={() => handleSort("lat")}>
+              {/* <th
+                className="py-2 px-4 border-b cursor-pointer"
+                onClick={() => handleSort("lat")}
+              >
                 Location
-              </th>
-              <th className="py-2 px-4 border-b cursor-pointer" onClick={() => handleSort("date")}>
+              </th> */}
+              <th
+                className="py-2 px-4 border-b cursor-pointer"
+                onClick={() => handleSort("date")}
+              >
                 Date
               </th>
-              <th className="py-2 px-4 border-b cursor-pointer" onClick={() => handleSort("time")}>
+              <th
+                className="py-2 px-4 border-b cursor-pointer"
+                onClick={() => handleSort("time")}
+              >
                 Time
               </th>
             </tr>
           </thead>
           <tbody>
-            {attendenceList.map((attendence) => (
-              <tr key={attendence.id}>
-                <td
+            {attendenceList.map((attendance) => (
+              <tr key={attendance.id}>
+                {/* <td
                   className="py-2 px-4 border-b cursor-pointer text-blue-500"
-                  onClick={() => openGoogleMaps(attendence.lat, attendence.lon)}
+                  onClick={() =>
+                    openGoogleMaps(attendance.lat, attendance.lon)
+                  }
                 >
-                  {`${attendence.lat}, ${attendence.lon}`}
-                </td>
-                <td className="py-2 px-4 border-b">{attendence.date}</td>
-                <td className="py-2 px-4 border-b">{attendence.time}</td>
+                  {attendance.address ? attendance.address : "Loading..."}
+                </td> */}
+                <td className="py-2 px-4 border-b">{attendance.date}</td>
+                <td className="py-2 px-4 border-b">{attendance.time}</td>
               </tr>
             ))}
           </tbody>
