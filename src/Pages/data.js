@@ -13,35 +13,39 @@ function Data() {
   const AttendenceCollectionRef = collection(db, "attendence");
 
   useEffect(() => {
-    const fetchData = async () => {
+    const getAttendence = async () => {
       try {
         const currentUser = auth.currentUser;
+
         if (!currentUser) {
           console.error("User not authenticated");
           return;
         }
+
         const currentUserId = currentUser.uid;
+
         console.log("Current User ID:", currentUserId);
+
         const q = query(
           AttendenceCollectionRef,
           where("userId", "==", currentUserId),
           orderBy(sortBy, sortOrder)
         );
+
         const querySnapshot = await getDocs(q);
+
         const attendenceData = [];
         querySnapshot.forEach((doc) => {
           attendenceData.push({ id: doc.id, ...doc.data() });
         });
+
         setAttendenceList(attendenceData);
       } catch (error) {
         console.error("Error fetching attendance data:", error);
       }
     };
 
-    const interval = setInterval(fetchData, 5000); // Fetch data every 5 seconds
-
-    return () => clearInterval(interval); // Cleanup function
-
+    getAttendence();
   }, [sortBy, sortOrder]); // Update the effect when sortBy or sortOrder changes
 
   const openGoogleMaps = (lat, lon) => {
@@ -62,13 +66,13 @@ function Data() {
       attendenceList.map(async (attendance) => {
         try {
           const response = await axios.get(
-            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${attendance.lat},${attendance.lon}&key=YOUR_API_KEY`
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${attendance.lat},${attendance.lon}&key=AIzaSyD4lI12Rj-hm6kdgP_5pvJPj1PWFKwKeCE`
           );
           const address = response.data.results[0].formatted_address;
           return [address, attendance.date, attendance.time];
         } catch (error) {
           console.error("Error fetching address:", error);
-          return ["Address not available", attendance.date, attendance.time];
+          return ["", attendance.date, attendance.time];
         }
       })
     );
@@ -126,7 +130,7 @@ function Data() {
                     openGoogleMaps(attendance.lat, attendance.lon)
                   }
                 >
-                  {attendance.address ? attendance.address : "Loading..."}
+                  {`${attendance.lat}, ${attendance.lon}`}
                 </td> */}
                 <td className="py-2 px-4 border-b">{attendance.date}</td>
                 <td className="py-2 px-4 border-b">{attendance.time}</td>
