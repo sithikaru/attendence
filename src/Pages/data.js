@@ -101,6 +101,7 @@ function Data() {
         <table className="min-w-full bg-white border border-gray-300 text-center">
           <thead>
             <tr>
+              #previous column that showed the location cordinated
               {/* <th
                 className="py-2 px-4 border-b cursor-pointer"
                 onClick={() => handleSort("lat")}

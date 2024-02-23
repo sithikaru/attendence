@@ -3,6 +3,7 @@ import { auth } from "../config/firebase";
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 import Nav from "../component/nav";
 import { useNavigate } from "react-router-dom";
+import ForgotPassword from "../component/forgotPassword"; // Import the ForgotPassword component
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -12,6 +13,7 @@ function Login() {
   const [resetError, setResetError] = useState("");
   const [isPasswordReset, setIsPasswordReset] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState("");
+  const [showForgotPassword, setShowForgotPassword] = useState(false); // State to toggle showing the forgot password form
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -118,49 +120,32 @@ function Login() {
           </form>
           <div className="mt-4">
             <button
-              onClick={() => {
-                setResetEmail("");
-                setFeedbackMessage("");
-              }}
+              onClick={() => setShowForgotPassword(true)} // Show forgot password form on button click
               className="text-blue-500 hover:underline focus:outline-none"
             >
               Forgot Password?
             </button>
           </div>
-          {resetEmail && (
-            <div>
-              <label htmlFor="resetEmail" className="block text-sm font-medium text-gray-600 mt-4">
-                Email for Password Reset
-              </label>
-              <input
-                type="email"
-                id="resetEmail"
-                value={resetEmail}
-                onChange={(e) => setResetEmail(e.target.value)}
-                className="mt-1 p-2 w-full border rounded-md"
-                required
-              />
-              <button
-                onClick={handleForgotPassword}
-                className="mt-2 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring focus:border-blue-300"
-              >
-                Reset Password
-              </button>
-              {resetError && (
-                <div className="mt-2 text-red-500">
-                  <p>{resetError}</p>
-                </div>
-              )}
-              {feedbackMessage && (
-                <div className="mt-2 text-green-500">
-                  <p>{feedbackMessage}</p>
-                </div>
-              )}
-              {isPasswordReset && (
-                <div className="mt-2 text-green-500">
-                  <p>Password reset email sent. Check your inbox.</p>
-                </div>
-              )}
+          {showForgotPassword && (
+            <ForgotPassword
+              setResetError={setResetError}
+              setFeedbackMessage={setFeedbackMessage}
+              setIsPasswordReset={setIsPasswordReset}
+            />
+          )}
+          {resetError && (
+            <div className="mt-2 text-red-500">
+              <p>{resetError}</p>
+            </div>
+          )}
+          {feedbackMessage && (
+            <div className="mt-2 text-green-500">
+              <p>{feedbackMessage}</p>
+            </div>
+          )}
+          {isPasswordReset && (
+            <div className="mt-2 text-green-500">
+              <p>Password reset email sent. Check your inbox.</p>
             </div>
           )}
         </div>
