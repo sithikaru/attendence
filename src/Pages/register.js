@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { auth, db } from "../config/firebase";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { collection, doc, setDoc } from "firebase/firestore";
+import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
 import Nav from "../component/nav";
 
 function Register() {
@@ -10,11 +11,16 @@ function Register() {
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate(); // Initialize useNavigate hook
 
   const register = async () => {
     try {
       // Create user with email and password
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
 
       // Update user profile with the provided name
       await updateProfile(userCredential.user, {
@@ -28,6 +34,18 @@ function Register() {
         email, // Save email to the user document
         phone,
       });
+
+      // Redirect to "/" after successful registration
+      navigate("/");
+
+      // Display success message (optional)
+      alert("Successfully registered");
+
+      // Clear input fields (optional)
+      setName("");
+      setEmail("");
+      setPassword("");
+      setPhone("");
     } catch (err) {
       setError(err.message);
     }
@@ -55,15 +73,6 @@ function Register() {
 
     // Add your registration logic here
     await register();
-
-    // Display success message
-    alert("Successfully registered");
-
-    // Clear input fields
-    setName("");
-    setEmail("");
-    setPassword("");
-    setPhone("");
   };
 
   return (

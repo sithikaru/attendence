@@ -1,14 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { auth } from '../config/firebase';
 import logOut from './logOut';
 
 function Nav() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(!!auth.currentUser); // Check if the user is initially logged in
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
   };
+
+  useEffect(() => {
+    // Define a function to check user login status
+    const checkUserLogin = () => {
+      setLoggedIn(!!auth.currentUser); // Update loggedIn state based on current user status
+    };
+
+    // Set up interval to check user login status every 5 seconds
+    const interval = setInterval(checkUserLogin, 5000);
+
+    // Clean up function to clear the interval when component unmounts
+    return () => clearInterval(interval);
+  }, []); // Dependency array to run the effect only once on component mount
 
   return (
     <div className='bg-blue-500 text-white p-4'>
@@ -38,9 +52,9 @@ function Nav() {
           </button>
         </div>
         <div className={`lg:flex items-center ${menuOpen ? 'block' : 'hidden'}`}>
-          {auth?.currentUser?.email ? (
+          {loggedIn ? ( // Check if user is logged in
             <div className='lg:flex items-center'>
-              <h1 className='mr-4'>Welcome, {auth?.currentUser?.email}</h1>
+              <h1 className='mr-4'>Welcome, {auth.currentUser.email}</h1> {/* Display user email */}
               <button
                 onClick={logOut}
                 className='px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 focus:outline-none focus:ring focus:border-blue-300'

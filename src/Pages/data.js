@@ -13,7 +13,7 @@ function Data() {
   const AttendenceCollectionRef = collection(db, "attendence");
 
   useEffect(() => {
-    const getAttendence = async () => {
+    const fetchData = async () => {
       try {
         const currentUser = auth.currentUser;
 
@@ -23,8 +23,6 @@ function Data() {
         }
 
         const currentUserId = currentUser.uid;
-
-        console.log("Current User ID:", currentUserId);
 
         const q = query(
           AttendenceCollectionRef,
@@ -45,7 +43,11 @@ function Data() {
       }
     };
 
-    getAttendence();
+    fetchData();
+
+    const interval = setInterval(fetchData, 5000); // Fetch data every 5 seconds
+
+    return () => clearInterval(interval); // Cleanup function to clear interval
   }, [sortBy, sortOrder]); // Update the effect when sortBy or sortOrder changes
 
   const openGoogleMaps = (lat, lon) => {
@@ -66,7 +68,7 @@ function Data() {
       attendenceList.map(async (attendance) => {
         try {
           const response = await axios.get(
-            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${attendance.lat},${attendance.lon}&key=AIzaSyD4lI12Rj-hm6kdgP_5pvJPj1PWFKwKeCE`
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${attendance.lat},${attendance.lon}&key=YOUR_GOOGLE_MAPS_API_KEY`
           );
           const address = response.data.results[0].formatted_address;
           return [address, attendance.date, attendance.time];
@@ -101,13 +103,6 @@ function Data() {
         <table className="min-w-full bg-white border border-gray-300 text-center">
           <thead>
             <tr>
-              #previous column that showed the location cordinated
-              {/* <th
-                className="py-2 px-4 border-b cursor-pointer"
-                onClick={() => handleSort("lat")}
-              >
-                Location
-              </th> */}
               <th
                 className="py-2 px-4 border-b cursor-pointer"
                 onClick={() => handleSort("date")}
@@ -125,14 +120,6 @@ function Data() {
           <tbody>
             {attendenceList.map((attendance) => (
               <tr key={attendance.id}>
-                {/* <td
-                  className="py-2 px-4 border-b cursor-pointer text-blue-500"
-                  onClick={() =>
-                    openGoogleMaps(attendance.lat, attendance.lon)
-                  }
-                >
-                  {`${attendance.lat}, ${attendance.lon}`}
-                </td> */}
                 <td className="py-2 px-4 border-b">{attendance.date}</td>
                 <td className="py-2 px-4 border-b">{attendance.time}</td>
               </tr>
