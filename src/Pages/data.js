@@ -68,7 +68,7 @@ function Data() {
       attendenceList.map(async (attendance) => {
         try {
           const response = await axios.get(
-            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${attendance.lat},${attendance.lon}&key=YOUR_GOOGLE_MAPS_API_KEY`
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${attendance.lat},${attendance.lon}&key=AIzaSyD4lI12Rj-hm6kdgP_5pvJPj1PWFKwKeCE`
           );
           const address = response.data.results[0].formatted_address;
           return [address, attendance.date, attendance.time];
